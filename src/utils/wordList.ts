@@ -33,6 +33,8 @@ export const getDailyWord = (): string => {
 };
 
 // Check if a word is in our list (for validating guesses)
+// Modified to accept any 5-letter word for simplicity
 export const isValidWord = (word: string): boolean => {
-  return WORDS.includes(word.toUpperCase());
+  // Accept any 5-letter word instead of checking against our list
+  return word.length === 5;
 };

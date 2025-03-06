@@ -59,6 +59,12 @@ const WordleGame: React.FC = () => {
     }
   }, []);
   
+  // Input field reference for focusing
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  
+  // Current input value
+  const [inputValue, setInputValue] = useState<string>("");
+  
   // Handle refreshing the game with a new word
   const handleRefreshGame = useCallback(() => {
     const newWord = getRandomWord();
@@ -73,144 +79,154 @@ const WordleGame: React.FC = () => {
       keyboardStatus: {}
     });
     
+    setInputValue("");
+    
     toast({
       description: "New game started with a fresh word!",
       duration: 2000,
     });
+    
+    // Focus the input field
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   }, [toast]);
   
   // Handle keyboard input (both physical and on-screen)
   const handleKeyPress = useCallback((key: string) => {
     if (gameState.gameStatus !== 'playing') return;
     
-    setGameState(prevState => {
-      const { guesses, currentRow, currentTile } = prevState;
-      const currentGuess = [...guesses[currentRow]];
-      
-      // Handle letter input
-      if (key.length === 1 && key.match(/[a-z]/i)) {
+    if (key === 'ENTER') {
+      setGameState(prevState => {
+        const { guesses, currentRow, currentTile } = prevState;
+        
+        // If we don't have a full word, ignore
         if (currentTile < MAX_COLS) {
-          currentGuess[currentTile] = { 
-            letter: key.toUpperCase(), 
-            status: 'tbd' 
-          };
-          
-          return {
-            ...prevState,
-            guesses: [
-              ...guesses.slice(0, currentRow),
-              currentGuess,
-              ...guesses.slice(currentRow + 1)
-            ],
-            currentTile: currentTile + 1
-          };
+          toast({
+            description: "Word is too short",
+            duration: 1000,
+          });
+          return prevState;
         }
-      }
-      // Handle backspace
-      else if (key === 'BACKSPACE') {
-        if (currentTile > 0) {
-          currentGuess[currentTile - 1] = { letter: '', status: 'empty' };
+        
+        const currentGuess = [...guesses[currentRow]];
+        const word = currentGuess.map(tile => tile.letter).join('');
+        
+        if (!isValidWord(word)) {
+          // Shake the row to indicate invalid word
+          setShakingRow(currentRow);
+          setTimeout(() => setShakingRow(null), 500);
           
-          return {
-            ...prevState,
-            guesses: [
-              ...guesses.slice(0, currentRow),
-              currentGuess,
-              ...guesses.slice(currentRow + 1)
-            ],
-            currentTile: currentTile - 1
-          };
+          toast({
+            description: "Not a valid 5-letter word",
+            duration: 1000,
+          });
+          
+          return prevState;
         }
-      }
-      // Handle enter
-      else if (key === 'ENTER') {
-        if (currentTile === MAX_COLS) {
-          // Check if the guess is a valid word
-          const word = currentGuess.map(tile => tile.letter).join('');
+        
+        // Check the guess against the solution
+        const checkedGuess = checkGuess(currentGuess, solution);
+        
+        // Update the guesses with the checked result
+        const newGuesses = [
+          ...guesses.slice(0, currentRow),
+          checkedGuess,
+          ...guesses.slice(currentRow + 1)
+        ];
+        
+        // Update keyboard status
+        const newKeyboardStatus = updateKeyboardStatus(
+          prevState.keyboardStatus,
+          checkedGuess
+        );
+        
+        // Check if the player won
+        const won = checkedGuess.every(tile => tile.status === 'correct');
+        
+        // Check if the player lost (all rows used)
+        const lost = !won && currentRow === MAX_ROWS - 1;
+        
+        // Update game status
+        let newGameStatus = prevState.gameStatus;
+        if (won) {
+          newGameStatus = 'won';
           
-          if (!isValidWord(word)) {
-            // Shake the row to indicate invalid word
-            setShakingRow(currentRow);
-            setTimeout(() => setShakingRow(null), 500);
-            
-            toast({
-              description: "Not in word list",
-              duration: 1000,
-            });
-            
-            return prevState;
-          }
+          toast({
+            description: ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Great!", "Phew!"][currentRow],
+            duration: 2000,
+          });
           
-          // Check the guess against the solution
-          const checkedGuess = checkGuess(currentGuess, solution);
+          // Update game stats
+          updateGameStats(true, currentRow + 1);
+          setStats(getGameStats());
+        } else if (lost) {
+          newGameStatus = 'lost';
           
-          // Update the guesses with the checked result
-          const newGuesses = [
-            ...guesses.slice(0, currentRow),
-            checkedGuess,
-            ...guesses.slice(currentRow + 1)
-          ];
+          toast({
+            description: `The word was ${solution}`,
+            duration: 3000,
+          });
           
-          // Update keyboard status
-          const newKeyboardStatus = updateKeyboardStatus(
-            prevState.keyboardStatus,
-            checkedGuess
-          );
-          
-          // Check if the player won
-          const won = checkedGuess.every(tile => tile.status === 'correct');
-          
-          // Check if the player lost (all rows used)
-          const lost = !won && currentRow === MAX_ROWS - 1;
-          
-          // Update game status
-          let newGameStatus = prevState.gameStatus;
-          if (won) {
-            newGameStatus = 'won';
-            
-            toast({
-              description: ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Great!", "Phew!"][currentRow],
-              duration: 2000,
-            });
-          } else if (lost) {
-            newGameStatus = 'lost';
-            
-            toast({
-              description: `The word was ${solution}`,
-              duration: 3000,
-            });
-          }
-          
-          return {
-            ...prevState,
-            guesses: newGuesses,
-            currentRow: currentRow + 1,
-            currentTile: 0,
-            gameStatus: newGameStatus,
-            keyboardStatus: newKeyboardStatus
-          };
+          // Update game stats
+          updateGameStats(false);
+          setStats(getGameStats());
         }
-      }
-      
-      return prevState;
-    });
+        
+        setInputValue("");
+        
+        return {
+          ...prevState,
+          guesses: newGuesses,
+          currentRow: currentRow + 1,
+          currentTile: 0,
+          gameStatus: newGameStatus,
+          keyboardStatus: newKeyboardStatus
+        };
+      });
+    }
   }, [gameState, solution, toast]);
   
-  // Handle physical keyboard events
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toUpperCase();
-      
-      if (key === 'BACKSPACE' || key === 'ENTER' || (key.length === 1 && key.match(/[A-Z]/))) {
-        handleKeyPress(key);
-      }
-    };
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase();
+    setInputValue(value);
     
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyPress]);
+    // Update the current row with the input value
+    setGameState(prevState => {
+      if (prevState.gameStatus !== 'playing') return prevState;
+      
+      const { guesses, currentRow } = prevState;
+      const currentGuess = [...guesses[currentRow]];
+      
+      // Clear the current row
+      for (let i = 0; i < MAX_COLS; i++) {
+        currentGuess[i] = { letter: '', status: 'empty' };
+      }
+      
+      // Fill in the letters from the input value
+      for (let i = 0; i < Math.min(value.length, MAX_COLS); i++) {
+        currentGuess[i] = { letter: value[i], status: 'tbd' };
+      }
+      
+      return {
+        ...prevState,
+        guesses: [
+          ...guesses.slice(0, currentRow),
+          currentGuess,
+          ...guesses.slice(currentRow + 1)
+        ],
+        currentTile: Math.min(value.length, MAX_COLS)
+      };
+    });
+  };
+
+  // Focus input when component mounts
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   return (
     <div className="flex flex-col items-center min-h-screen">
@@ -226,6 +242,21 @@ const WordleGame: React.FC = () => {
           currentRow={gameState.currentRow} 
           shakingRow={shakingRow}
         />
+        
+        <div className="my-4 px-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={handleInputChange}
+            maxLength={5}
+            className="w-full p-3 text-center text-xl font-medium border-2 border-gray-300 rounded"
+            placeholder="Type your guess here"
+            autoComplete="off"
+            autoCapitalize="off"
+            aria-label="Word guess input"
+          />
+        </div>
         
         <GameKeyboard 
           onKeyPress={handleKeyPress} 
