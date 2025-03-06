@@ -38,7 +38,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </Button>
       </div>
       
-      <h1 className="text-xl md:text-3xl font-bold tracking-wider">WORDLE</h1>
+      <h1 className="text-xl md:text-3xl font-bold tracking-wider">WORD UP</h1>
       
       <Button 
         variant="ghost" 
