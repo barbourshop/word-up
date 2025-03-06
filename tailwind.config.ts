@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Wordle specific colors
+				wordle: {
+					correct: '#84CC16',
+					present: '#F59E0B',
+					absent: '#E2E8F0'
 				}
 			},
 			borderRadius: {
@@ -84,11 +91,50 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'flip': {
+					'0%': { 
+						transform: 'rotateX(0deg)',
+						backgroundColor: 'white',
+						borderColor: '#94a3b8'
+					},
+					'45%': {
+						transform: 'rotateX(90deg)',
+						backgroundColor: 'white',
+						borderColor: '#94a3b8'
+					},
+					'55%': {
+						transform: 'rotateX(90deg)'
+					},
+					'100%': { 
+						transform: 'rotateX(0deg)'
+					}
+				},
+				'bounce-in': {
+					'0%': { 
+						transform: 'scale(0.8)',
+						opacity: '0' 
+					},
+					'70%': { 
+						transform: 'scale(1.1)',
+						opacity: '1' 
+					},
+					'100%': { 
+						transform: 'scale(1)' 
+					}
+				},
+				'shake': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-2px)' },
+					'20%, 40%, 60%, 80%': { transform: 'translateX(2px)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'flip': 'flip 0.5s ease-in-out forwards',
+				'bounce-in': 'bounce-in 0.25s ease forwards',
+				'shake': 'shake 0.5s ease-in-out'
 			}
 		}
 	},
