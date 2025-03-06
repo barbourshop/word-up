@@ -10,6 +10,12 @@ export const WORDS = [
   "ZEBRA", "ZESTY"
 ];
 
+// Get a random word from the list
+export const getRandomWord = (): string => {
+  const randomIndex = Math.floor(Math.random() * WORDS.length);
+  return WORDS[randomIndex];
+};
+
 // Get a daily word based on the current date
 export const getDailyWord = (): string => {
   const today = new Date();

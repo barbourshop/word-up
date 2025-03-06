@@ -17,7 +17,7 @@ import {
   getGameStats,
   updateGameStats
 } from '@/utils/gameUtils';
-import { getDailyWord, isValidWord } from '@/utils/wordList';
+import { getRandomWord, isValidWord } from '@/utils/wordList';
 
 const MAX_ROWS = 6;
 const MAX_COLS = 5;
@@ -25,8 +25,8 @@ const MAX_COLS = 5;
 const WordleGame: React.FC = () => {
   const { toast } = useToast();
   
-  // Get today's solution
-  const [solution] = useState<string>(getDailyWord());
+  // Get a random word instead of daily word
+  const [solution, setSolution] = useState<string>(getRandomWord());
   
   // Game dialogs state
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
@@ -34,14 +34,6 @@ const WordleGame: React.FC = () => {
   
   // Initialize the game state
   const [gameState, setGameState] = useState<GameState>(() => {
-    // Try to load saved game
-    const savedGame = loadGameState(solution);
-    
-    if (savedGame) {
-      return savedGame;
-    }
-    
-    // Or initialize a new game
     return {
       guesses: initializeBoard(MAX_ROWS, MAX_COLS),
       currentRow: 0,
@@ -65,19 +57,27 @@ const WordleGame: React.FC = () => {
       setShowInstructions(true);
       localStorage.setItem('wordleHasVisited', 'true');
     }
-    
-    // Show stats if game is already over
-    if (gameState.gameStatus !== 'playing') {
-      setTimeout(() => {
-        setShowStats(true);
-      }, 1500);
-    }
   }, []);
   
-  // Save game state whenever it changes
-  useEffect(() => {
-    saveGameState(gameState);
-  }, [gameState]);
+  // Handle refreshing the game with a new word
+  const handleRefreshGame = useCallback(() => {
+    const newWord = getRandomWord();
+    setSolution(newWord);
+    
+    setGameState({
+      guesses: initializeBoard(MAX_ROWS, MAX_COLS),
+      currentRow: 0,
+      currentTile: 0,
+      solution: newWord,
+      gameStatus: 'playing',
+      keyboardStatus: {}
+    });
+    
+    toast({
+      description: "New game started with a fresh word!",
+      duration: 2000,
+    });
+  }, [toast]);
   
   // Handle keyboard input (both physical and on-screen)
   const handleKeyPress = useCallback((key: string) => {
@@ -168,30 +168,12 @@ const WordleGame: React.FC = () => {
           if (won) {
             newGameStatus = 'won';
             
-            // Wait for animation before showing stats
-            setTimeout(() => {
-              setShowStats(true);
-            }, 1500);
-            
-            // Update stats
-            updateGameStats(true, currentRow + 1);
-            setStats(getGameStats());
-            
             toast({
               description: ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Great!", "Phew!"][currentRow],
               duration: 2000,
             });
           } else if (lost) {
             newGameStatus = 'lost';
-            
-            // Wait for animation before showing stats
-            setTimeout(() => {
-              setShowStats(true);
-            }, 1500);
-            
-            // Update stats
-            updateGameStats(false);
-            setStats(getGameStats());
             
             toast({
               description: `The word was ${solution}`,
@@ -235,6 +217,7 @@ const WordleGame: React.FC = () => {
       <GameHeader 
         onOpenInstructions={() => setShowInstructions(true)}
         onOpenStats={() => setShowStats(true)}
+        onRefreshGame={handleRefreshGame}
       />
       
       <main className="flex-1 w-full max-w-[500px] px-2 sm:px-4 py-6 flex flex-col justify-between">
