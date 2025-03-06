@@ -2,7 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { TileStatus } from '@/utils/gameUtils';
-import { X } from 'lucide-react';
+import { X, CornerDownLeft } from 'lucide-react';
 
 interface KeyboardProps {
   onKeyPress: (key: string) => void;
@@ -17,7 +17,11 @@ const GameKeyboard: React.FC<KeyboardProps> = ({ onKeyPress, keyboardStatus }) =
   ];
 
   const getKeyStyle = (key: string) => {
-    if (key === 'ENTER' || key === 'BACKSPACE') {
+    if (key === 'ENTER') {
+      return 'bg-green-500 text-white hover:bg-green-600';
+    }
+    
+    if (key === 'BACKSPACE') {
       return 'bg-gray-200 hover:bg-gray-300';
     }
     
@@ -34,24 +38,37 @@ const GameKeyboard: React.FC<KeyboardProps> = ({ onKeyPress, keyboardStatus }) =
     }
   };
 
+  const getKeyWidth = (key: string) => {
+    if (key === 'ENTER' || key === 'BACKSPACE') {
+      return 'w-auto min-w-[4.5rem] sm:min-w-[4.5rem]';
+    }
+    return 'w-[2rem] sm:w-[2.5rem]';
+  };
+
   return (
-    <div className="w-full max-w-[500px] px-1 sm:px-2 mx-auto">
+    <div className="w-full max-w-[500px] px-1 pb-4 mx-auto">
       {keyboardRows.map((row, rowIndex) => (
         <div 
           key={rowIndex} 
-          className="flex justify-center gap-1 sm:gap-1.5 my-1.5"
+          className="flex justify-center gap-1 my-1"
         >
           {row.map((key) => (
             <button
               key={key}
               className={cn(
-                'keyboard-key',
+                'keyboard-key h-12 rounded flex items-center justify-center font-medium transition-all',
+                getKeyWidth(key),
                 getKeyStyle(key)
               )}
               onClick={() => onKeyPress(key)}
             >
               {key === 'BACKSPACE' ? (
-                <X size={20} className="mr-0 sm:mr-1" />
+                <X size={18} className="mx-auto" />
+              ) : key === 'ENTER' ? (
+                <div className="flex items-center gap-1 px-1">
+                  <CornerDownLeft size={16} />
+                  <span className="text-xs sm:text-sm">ENTER</span>
+                </div>
               ) : (
                 key
               )}

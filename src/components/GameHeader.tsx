@@ -27,16 +27,18 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </Button>
         
         <Button
-          variant="ghost"
-          size="icon"
+          variant="outline"
+          size="sm"
           onClick={onRefreshGame}
           title="New word"
+          className="flex items-center gap-1 text-xs"
         >
-          <RefreshCw className="h-5 w-5" />
+          <RefreshCw className="h-4 w-4" />
+          <span className="hidden sm:inline">New Word</span>
         </Button>
       </div>
       
-      <h1 className="text-2xl md:text-3xl font-bold tracking-wider">WORDLE</h1>
+      <h1 className="text-xl md:text-3xl font-bold tracking-wider">WORDLE</h1>
       
       <Button 
         variant="ghost" 
