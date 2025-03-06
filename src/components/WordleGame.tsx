@@ -59,12 +59,6 @@ const WordleGame: React.FC = () => {
     }
   }, []);
   
-  // Input field reference for focusing
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  
-  // Current input value
-  const [inputValue, setInputValue] = useState<string>("");
-  
   // Handle refreshing the game with a new word
   const handleRefreshGame = useCallback(() => {
     const newWord = getRandomWord();
@@ -79,27 +73,60 @@ const WordleGame: React.FC = () => {
       keyboardStatus: {}
     });
     
-    setInputValue("");
-    
     toast({
       description: "New game started with a fresh word!",
       duration: 2000,
     });
-    
-    // Focus the input field
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
   }, [toast]);
   
-  // Handle keyboard input (both physical and on-screen)
+  // Handle keyboard input
   const handleKeyPress = useCallback((key: string) => {
     if (gameState.gameStatus !== 'playing') return;
     
-    if (key === 'ENTER') {
-      setGameState(prevState => {
-        const { guesses, currentRow, currentTile } = prevState;
+    setGameState(prevState => {
+      const { guesses, currentRow, currentTile } = prevState;
+      const currentGuess = [...guesses[currentRow]];
+      
+      // Handle letter input
+      if (key.length === 1 && /[A-Z]/.test(key)) {
+        // If we're at the end of the row, ignore
+        if (currentTile >= MAX_COLS) return prevState;
         
+        // Update the current tile with the pressed key
+        currentGuess[currentTile] = { letter: key, status: 'tbd' };
+        
+        return {
+          ...prevState,
+          guesses: [
+            ...guesses.slice(0, currentRow),
+            currentGuess,
+            ...guesses.slice(currentRow + 1)
+          ],
+          currentTile: currentTile + 1
+        };
+      }
+      
+      // Handle backspace
+      if (key === 'BACKSPACE') {
+        // If we're at the beginning of the row, ignore
+        if (currentTile <= 0) return prevState;
+        
+        // Remove the letter from the current tile
+        currentGuess[currentTile - 1] = { letter: '', status: 'empty' };
+        
+        return {
+          ...prevState,
+          guesses: [
+            ...guesses.slice(0, currentRow),
+            currentGuess,
+            ...guesses.slice(currentRow + 1)
+          ],
+          currentTile: currentTile - 1
+        };
+      }
+      
+      // Handle enter
+      if (key === 'ENTER') {
         // If we don't have a full word, ignore
         if (currentTile < MAX_COLS) {
           toast({
@@ -109,7 +136,6 @@ const WordleGame: React.FC = () => {
           return prevState;
         }
         
-        const currentGuess = [...guesses[currentRow]];
         const word = currentGuess.map(tile => tile.letter).join('');
         
         if (!isValidWord(word)) {
@@ -126,7 +152,7 @@ const WordleGame: React.FC = () => {
         }
         
         // Check the guess against the solution
-        const checkedGuess = checkGuess(currentGuess, solution);
+        const checkedGuess = checkGuess(currentGuess, prevState.solution);
         
         // Update the guesses with the checked result
         const newGuesses = [
@@ -164,7 +190,7 @@ const WordleGame: React.FC = () => {
           newGameStatus = 'lost';
           
           toast({
-            description: `The word was ${solution}`,
+            description: `The word was ${prevState.solution}`,
             duration: 3000,
           });
           
@@ -172,8 +198,6 @@ const WordleGame: React.FC = () => {
           updateGameStats(false);
           setStats(getGameStats());
         }
-        
-        setInputValue("");
         
         return {
           ...prevState,
@@ -183,50 +207,34 @@ const WordleGame: React.FC = () => {
           gameStatus: newGameStatus,
           keyboardStatus: newKeyboardStatus
         };
-      });
-    }
-  }, [gameState, solution, toast]);
-  
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase();
-    setInputValue(value);
-    
-    // Update the current row with the input value
-    setGameState(prevState => {
-      if (prevState.gameStatus !== 'playing') return prevState;
-      
-      const { guesses, currentRow } = prevState;
-      const currentGuess = [...guesses[currentRow]];
-      
-      // Clear the current row
-      for (let i = 0; i < MAX_COLS; i++) {
-        currentGuess[i] = { letter: '', status: 'empty' };
       }
       
-      // Fill in the letters from the input value
-      for (let i = 0; i < Math.min(value.length, MAX_COLS); i++) {
-        currentGuess[i] = { letter: value[i], status: 'tbd' };
-      }
-      
-      return {
-        ...prevState,
-        guesses: [
-          ...guesses.slice(0, currentRow),
-          currentGuess,
-          ...guesses.slice(currentRow + 1)
-        ],
-        currentTile: Math.min(value.length, MAX_COLS)
-      };
+      return prevState;
     });
-  };
-
-  // Focus input when component mounts
+  }, [gameState, toast]);
+  
+  // Handle physical keyboard input
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (gameState.gameStatus !== 'playing') return;
+      
+      const key = e.key.toUpperCase();
+      
+      if (key === 'ENTER') {
+        handleKeyPress('ENTER');
+      } else if (key === 'BACKSPACE' || key === 'DELETE') {
+        handleKeyPress('BACKSPACE');
+      } else if (/^[A-Z]$/.test(key)) {
+        handleKeyPress(key);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyPress, gameState.gameStatus]);
 
   return (
     <div className="flex flex-col items-center min-h-screen">
@@ -242,21 +250,6 @@ const WordleGame: React.FC = () => {
           currentRow={gameState.currentRow} 
           shakingRow={shakingRow}
         />
-        
-        <div className="my-4 px-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-            maxLength={5}
-            className="w-full p-3 text-center text-xl font-medium border-2 border-gray-300 rounded"
-            placeholder="Type your guess here"
-            autoComplete="off"
-            autoCapitalize="off"
-            aria-label="Word guess input"
-          />
-        </div>
         
         <GameKeyboard 
           onKeyPress={handleKeyPress} 
