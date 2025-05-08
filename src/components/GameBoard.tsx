@@ -1,4 +1,3 @@
-
 import React from 'react';
 import GameRow from './GameRow';
 import { Tile } from '@/utils/gameUtils';
@@ -11,7 +10,7 @@ interface GameBoardProps {
 
 const GameBoard: React.FC<GameBoardProps> = ({ guesses, currentRow, shakingRow }) => {
   return (
-    <div className="grid place-items-center mb-6">
+    <div className="grid place-items-center mb-6" data-testid="main-board">
       {guesses.map((row, rowIndex) => (
         <GameRow 
           key={rowIndex} 

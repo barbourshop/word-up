@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Dialog,
@@ -38,7 +37,7 @@ const StatsDialog: React.FC<StatsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-testid="stats-dialog">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold">Statistics</DialogTitle>
         </DialogHeader>

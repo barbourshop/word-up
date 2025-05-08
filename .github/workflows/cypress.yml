@@ -1,0 +1,46 @@
+name: Full Pipeline (build, test E2E)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+        viewport:
+          # Common device sizes: iPhone 6/7/8, iPad, Desktop
+          - { width: 375, height: 667 }   # Mobile
+          - { width: 768, height: 1024 }  # Tablet
+          - { width: 1440, height: 900 }  # Desktop
+    name: Cypress (${{ matrix.browser }}, ${{ matrix.viewport.width }}x${{ matrix.viewport.height }})
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start app
+        run: npm run dev &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for app to be ready
+        run: npx wait-on http://localhost:5173
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+          config: viewportWidth=${{ matrix.viewport.width }},viewportHeight=${{ matrix.viewport.height }}
+          start: false
+        env:
+          CYPRESS_baseUrl: http://localhost:5173 

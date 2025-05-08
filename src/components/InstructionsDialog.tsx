@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Dialog,
@@ -18,7 +17,7 @@ const InstructionsDialog: React.FC<InstructionsDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-testid="instructions-dialog">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold">How to Play</DialogTitle>
         </DialogHeader>

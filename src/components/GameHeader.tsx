@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HelpCircle, BarChart2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           variant="ghost" 
           size="icon"
           onClick={onOpenInstructions}
+          data-testid="instructions-btn"
         >
           <HelpCircle className="h-5 w-5" />
         </Button>
@@ -32,6 +32,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           onClick={onRefreshGame}
           title="New word"
           className="flex items-center gap-1 text-xs"
+          data-testid="new-game-btn"
         >
           <RefreshCw className="h-4 w-4" />
           <span className="hidden sm:inline">New Word</span>
@@ -44,6 +45,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         variant="ghost" 
         size="icon"
         onClick={onOpenStats}
+        data-testid="stats-btn"
       >
         <BarChart2 className="h-5 w-5" />
       </Button>
