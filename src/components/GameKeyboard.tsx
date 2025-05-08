@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { TileStatus } from '@/utils/gameUtils';
@@ -33,7 +32,7 @@ const GameKeyboard: React.FC<KeyboardProps> = ({ onKeyPress, keyboardStatus }) =
   };
 
   return (
-    <div className="w-full max-w-[500px] mx-auto mb-4 px-1">
+    <div className="w-full max-w-[500px] mx-auto mb-4 px-1" data-testid="game-keyboard">
       {rows.map((row, rowIndex) => (
         <div key={rowIndex} className="flex justify-center gap-1 mb-1.5">
           {rowIndex === 2 && (
@@ -42,6 +41,7 @@ const GameKeyboard: React.FC<KeyboardProps> = ({ onKeyPress, keyboardStatus }) =
               onClick={() => onKeyPress('BACKSPACE')}
             >
               <Delete size={16} />
+              <span className="sr-only">BACKSPACE</span>
             </Button>
           )}
           
@@ -64,6 +64,7 @@ const GameKeyboard: React.FC<KeyboardProps> = ({ onKeyPress, keyboardStatus }) =
               onClick={() => onKeyPress('ENTER')}
             >
               <CornerDownLeft size={16} />
+              <span className="sr-only">ENTER</span>
             </Button>
           )}
         </div>

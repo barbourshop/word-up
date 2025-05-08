@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import GameBoard from './GameBoard';
@@ -22,11 +21,32 @@ import { getRandomWord, isValidWord } from '@/utils/wordList';
 const MAX_ROWS = 6;
 const MAX_COLS = 5;
 
+// Add global error handlers for debugging
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', function (event) {
+    console.error('Global error:', event.error);
+  });
+  window.addEventListener('unhandledrejection', function (event) {
+    console.error('Unhandled promise rejection:', event.reason);
+  });
+}
+
+function getTestSolution(): string | null {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const testSolution = params.get('solution');
+    if (testSolution && testSolution.length === 5) {
+      return testSolution.toUpperCase();
+    }
+  }
+  return null;
+}
+
 const WordleGame: React.FC = () => {
   const { toast } = useToast();
   
-  // Get a random word instead of daily word
-  const [solution, setSolution] = useState<string>(getRandomWord());
+  const testSolution = getTestSolution();
+  const [solution, setSolution] = useState<string>(testSolution || getRandomWord());
   
   // Game dialogs state
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
@@ -61,7 +81,7 @@ const WordleGame: React.FC = () => {
   
   // Handle refreshing the game with a new word
   const handleRefreshGame = useCallback(() => {
-    const newWord = getRandomWord();
+    const newWord = getTestSolution() || getRandomWord();
     setSolution(newWord);
     
     setGameState({
@@ -217,9 +237,8 @@ const WordleGame: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState.gameStatus !== 'playing') return;
-      
+      if (typeof e.key !== 'string') return;
       const key = e.key.toUpperCase();
-      
       if (key === 'ENTER') {
         handleKeyPress('ENTER');
       } else if (key === 'BACKSPACE' || key === 'DELETE') {
@@ -228,9 +247,7 @@ const WordleGame: React.FC = () => {
         handleKeyPress(key);
       }
     };
-    
     window.addEventListener('keydown', handleKeyDown);
-    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
