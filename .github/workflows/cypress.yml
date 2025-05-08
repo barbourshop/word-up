@@ -34,7 +34,7 @@ jobs:
           NODE_ENV: test
 
       - name: Wait for app to be ready
-        run: npx wait-on http://localhost:5173
+        run: npx wait-on http://localhost:8080
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
@@ -43,4 +43,4 @@ jobs:
           config: viewportWidth=${{ matrix.viewport.width }},viewportHeight=${{ matrix.viewport.height }}
           start: false
         env:
-          CYPRESS_baseUrl: http://localhost:5173 
+          CYPRESS_baseUrl: http://localhost:8080 
