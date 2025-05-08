@@ -25,6 +25,17 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
 
+      - name: Upload Playwright visual diff artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-visual-diffs
+          path: |
+            tests/test-results
+            tests/*.png
+            test-results
+            **/test-results
+
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
