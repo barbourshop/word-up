@@ -37,3 +37,10 @@ jobs:
           wait-on: 'http://localhost:8080'
         env:
           CYPRESS_baseUrl: http://localhost:8080 
+
+      - name: Upload Cypress image diff artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-image-diffs
+          path: cypress/snapshots/__diff_output__/ 
