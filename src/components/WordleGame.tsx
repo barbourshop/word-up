@@ -261,7 +261,7 @@ const WordleGame: React.FC = () => {
         onRefreshGame={handleRefreshGame}
       />
       
-      <main className="flex-1 w-full max-w-[500px] px-2 sm:px-4 py-6 flex flex-col justify-between">
+      <main className="flex-1 w-full max-w-[500px] px-2 sm:px-4 py-6 flex flex-col items-center gap-y-6 md:gap-y-8">
         <GameBoard 
           guesses={gameState.guesses} 
           currentRow={gameState.currentRow} 

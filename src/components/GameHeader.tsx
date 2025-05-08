@@ -15,8 +15,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   onRefreshGame,
 }) => {
   return (
-    <header className="w-full py-2 px-4 flex items-center justify-between">
-      <div className="flex gap-2">
+    <header className="w-full py-2 px-4 relative flex items-center justify-between">
+      <div className="flex gap-2 z-10">
         <Button 
           variant="ghost" 
           size="icon"
@@ -39,13 +39,17 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </Button>
       </div>
       
-      <h1 className="text-xl md:text-3xl font-bold tracking-wider">WORD UP</h1>
+      {/* Absolutely centered title, always aligned with the board */}
+      <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl md:text-3xl font-bold tracking-wider text-center w-full pointer-events-none select-none">
+        WORD UP
+      </h1>
       
       <Button 
         variant="ghost" 
         size="icon"
         onClick={onOpenStats}
         data-testid="stats-btn"
+        className="z-10"
       >
         <BarChart2 className="h-5 w-5" />
       </Button>
