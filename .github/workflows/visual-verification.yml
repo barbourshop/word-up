@@ -35,6 +35,10 @@ jobs:
             tests/*.png
             test-results
             **/test-results
+            tests/*-snapshots
+            tests/**/*.png
+            tests/**/*.spec.ts-snapshots
+            tests/**/*.spec.ts-snapshots/*
 
       - name: Upload Playwright HTML report
         if: always()
