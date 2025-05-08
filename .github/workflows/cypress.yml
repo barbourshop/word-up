@@ -42,5 +42,6 @@ jobs:
           browser: ${{ matrix.browser }}
           config: viewportWidth=${{ matrix.viewport.width }},viewportHeight=${{ matrix.viewport.height }}
           start: false
+          wait-on: 'http://localhost:8080'
         env:
           CYPRESS_baseUrl: http://localhost:8080 
