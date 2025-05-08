@@ -24,6 +24,7 @@ export default defineConfig({
     video: 'retain-on-failure',
     headless: true,
     viewport: { width: 1280, height: 720 },
+    screenshotOptions: { threshold: 0.02 },
   },
   projects: [
     {
