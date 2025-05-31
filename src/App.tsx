@@ -1,17 +1,19 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import GuestView from './GuestView';
-import AdminLogin from './AdminLogin';
-import AdminDashboard from './AdminDashboard';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import GuestView from "./GuestView";
+import AdminDashboard from "./AdminDashboard";
+
+const queryClient = new QueryClient();
 
 const App = () => (
-  <Router>
-    <Routes>
-      <Route path="/" element={<GuestView />} />
-      <Route path="/admin" element={<AdminLogin />} />
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  </Router>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/guest/:deviceId" element={<GuestView />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      </Routes>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
 
 export default App;

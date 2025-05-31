@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const STORAGE_KEY = 'tv-remote-content-options';
-const DEVICE_KEY = 'tv-remote-device-id';
-const ENDPOINT_KEY = 'tv-remote-device-endpoint';
-const DEFAULT_DEVICE = 'Living Room TV';
-const DEFAULT_ENDPOINT = 'http://192.168.1.100:8080/api/receive';
+const DEVICES_KEY = 'tv-remote-devices';
 const initialContent = [
   {
     label: 'Watch Warriors Game',
@@ -34,11 +31,14 @@ const AdminDashboard = () => {
   const [autoCuration, setAutoCuration] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [newId, setNewId] = useState('');
-  const [deviceId, setDeviceId] = useState('');
-  const [deviceInput, setDeviceInput] = useState('');
-  const [endpoint, setEndpoint] = useState('');
-  const [endpointInput, setEndpointInput] = useState('');
+
+  // Device management
+  const [devices, setDevices] = useState<{ id: number; name: string; ip: string }[]>([]);
+  const [deviceNameInput, setDeviceNameInput] = useState('');
+  const [ipInput, setIpInput] = useState('');
   const [deviceSaved, setDeviceSaved] = useState(false);
+
+  // Sequence editing
   const [editingSequenceId, setEditingSequenceId] = useState<string | null>(null);
   const [newStepType, setNewStepType] = useState<'ir' | 'delay'>('ir');
   const [newIrCommand, setNewIrCommand] = useState('');
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
   const [editIrCommand, setEditIrCommand] = useState('');
   const [editDelayMs, setEditDelayMs] = useState(1000);
 
-  // Load from localStorage on mount, or set default device/endpoint if not present
+  // Load from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -56,27 +56,39 @@ const AdminDashboard = () => {
         setContent(JSON.parse(stored));
       } catch {}
     }
-    let storedDevice = localStorage.getItem(DEVICE_KEY);
-    if (!storedDevice) {
-      localStorage.setItem(DEVICE_KEY, DEFAULT_DEVICE);
-      storedDevice = DEFAULT_DEVICE;
+    const storedDevices = localStorage.getItem(DEVICES_KEY);
+    if (storedDevices) {
+      try {
+        setDevices(JSON.parse(storedDevices));
+      } catch {}
     }
-    setDeviceId(storedDevice);
-    setDeviceInput(storedDevice);
-
-    let storedEndpoint = localStorage.getItem(ENDPOINT_KEY);
-    if (!storedEndpoint) {
-      localStorage.setItem(ENDPOINT_KEY, DEFAULT_ENDPOINT);
-      storedEndpoint = DEFAULT_ENDPOINT;
-    }
-    setEndpoint(storedEndpoint);
-    setEndpointInput(storedEndpoint);
   }, []);
 
-  // Save to localStorage whenever content changes
+  // Save to localStorage whenever content or devices change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
   }, [content]);
+  useEffect(() => {
+    localStorage.setItem(DEVICES_KEY, JSON.stringify(devices));
+  }, [devices]);
+
+  // Device management handlers
+  const handleAddDevice = () => {
+    if (!deviceNameInput || !ipInput) return;
+    // Find the next available numeric ID
+    const nextId = devices.length > 0 ? Math.max(...devices.map(d => d.id)) + 1 : 1;
+    setDevices(prev => [
+      ...prev,
+      { id: nextId, name: deviceNameInput, ip: ipInput },
+    ]);
+    setDeviceNameInput('');
+    setIpInput('');
+    setDeviceSaved(true);
+    setTimeout(() => setDeviceSaved(false), 1500);
+  };
+  const handleRemoveDevice = (id: number) => {
+    setDevices(prev => prev.filter(d => d.id !== id));
+  };
 
   const addContent = () => {
     if (newLabel && newId) {
@@ -87,15 +99,6 @@ const AdminDashboard = () => {
   };
   const removeContent = (contentId: string) => {
     setContent(content.filter(c => c.contentId !== contentId));
-  };
-
-  const handleDeviceSave = () => {
-    setDeviceId(deviceInput);
-    setEndpoint(endpointInput);
-    localStorage.setItem(DEVICE_KEY, deviceInput);
-    localStorage.setItem(ENDPOINT_KEY, endpointInput);
-    setDeviceSaved(true);
-    setTimeout(() => setDeviceSaved(false), 1500);
   };
 
   const handleAddStep = (contentId: string) => {
@@ -172,24 +175,32 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Device name"
                 className="px-2 py-1 border rounded flex-1"
-                value={deviceInput}
-                onChange={e => setDeviceInput(e.target.value)}
+                value={deviceNameInput}
+                onChange={e => setDeviceNameInput(e.target.value)}
               />
               <input
                 type="text"
-                placeholder="Device endpoint (URL or IP)"
+                placeholder="Device IP (e.g. 192.168.1.100)"
                 className="px-2 py-1 border rounded flex-1"
-                value={endpointInput}
-                onChange={e => setEndpointInput(e.target.value)}
+                value={ipInput}
+                onChange={e => setIpInput(e.target.value)}
               />
-              <button className="bg-blue-600 text-white px-4 py-1 rounded" onClick={handleDeviceSave}>
-                Save
+              <button className="bg-blue-600 text-white px-4 py-1 rounded" onClick={handleAddDevice}>
+                Add Device
               </button>
             </div>
             {deviceSaved && <span className="text-green-600 text-sm">Saved!</span>}
             <div className="text-gray-600 text-sm mt-1">
-              <div>Current device: <span className="font-mono">{deviceId}</span></div>
-              <div>Endpoint: <span className="font-mono">{endpoint}</span></div>
+              <div>Configured devices:</div>
+              <ul className="mt-1">
+                {devices.map(d => (
+                  <li key={d.id} className="flex items-center gap-2">
+                    <span className="font-mono">{d.id}</span> — <span>{d.name}</span> (<span className="font-mono">{d.ip}</span>)
+                    <button className="text-xs text-red-500 ml-2" onClick={() => handleRemoveDevice(d.id)}>Remove</button>
+                  </li>
+                ))}
+                {devices.length === 0 && <li className="text-gray-400">No devices configured.</li>}
+              </ul>
             </div>
           </div>
         </section>
