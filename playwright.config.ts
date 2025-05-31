@@ -25,70 +25,9 @@ export default defineConfig({
     headless: true,
   },
   projects: [
-    // Desktop
     {
-      name: 'chromium-desktop',
+      name: 'chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
-    },
-    {
-      name: 'firefox-desktop',
-      use: { ...devices['Desktop Firefox'], viewport: { width: 1440, height: 900 } },
-    },
-    {
-      name: 'webkit-desktop',
-      use: { ...devices['Desktop Safari'], viewport: { width: 1440, height: 900 } },
-    },
-    // Tablet Landscape
-    {
-      name: 'chromium-tablet-landscape',
-      use: { ...devices['iPad (gen 7) landscape'] },
-    },
-    {
-      name: 'firefox-tablet-landscape',
-      use: { ...devices['iPad (gen 7) landscape'] },
-    },
-    {
-      name: 'webkit-tablet-landscape',
-      use: { ...devices['iPad (gen 7) landscape'] },
-    },
-    // Tablet Portrait
-    {
-      name: 'chromium-tablet-portrait',
-      use: { ...devices['iPad (gen 7)'] },
-    },
-    {
-      name: 'firefox-tablet-portrait',
-      use: { ...devices['iPad (gen 7)'] },
-    },
-    {
-      name: 'webkit-tablet-portrait',
-      use: { ...devices['iPad (gen 7)'] },
-    },
-    // Mobile Portrait
-    {
-      name: 'chromium-mobile-portrait',
-      use: { ...devices['iPhone 12'] },
-    },
-    {
-      name: 'firefox-mobile-portrait',
-      use: { ...devices['iPhone 12'] },
-    },
-    {
-      name: 'webkit-mobile-portrait',
-      use: { ...devices['iPhone 12'] },
-    },
-    // Mobile Landscape
-    {
-      name: 'chromium-mobile-landscape',
-      use: { ...devices['iPhone 12 landscape'] },
-    },
-    {
-      name: 'firefox-mobile-landscape',
-      use: { ...devices['iPhone 12 landscape'] },
-    },
-    {
-      name: 'webkit-mobile-landscape',
-      use: { ...devices['iPhone 12 landscape'] },
     },
   ],
 }); 

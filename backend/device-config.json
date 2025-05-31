@@ -1,0 +1,4 @@
+{
+  "deviceName": "Living Room TV",
+  "deviceEndpoint": "http://localhost:5000/device-control"
+} 
